@@ -1,6 +1,6 @@
 package com.beginvegan.domain.review.presentation;
 
-import com.beginvegan.domain.report.dto.ReportContentReq;
+import com.beginvegan.domain.tmp.report.dto.ReportContentReq;
 import com.beginvegan.domain.review.application.ReviewService;
 import com.beginvegan.domain.review.dto.request.PostReviewReq;
 import com.beginvegan.domain.review.dto.request.UpdateReviewReq;

@@ -1,10 +1,10 @@
 package com.beginvegan.domain.review.domain;
 
 import com.beginvegan.domain.common.BaseEntity;
-import com.beginvegan.domain.recommendation.domain.Recommendation;
-import com.beginvegan.domain.report.domain.Report;
+import com.beginvegan.domain.tmp.recommendation.domain.Recommendation;
+import com.beginvegan.domain.tmp.report.domain.Report;
 import com.beginvegan.domain.restaurant.domain.Restaurant;
-import com.beginvegan.domain.suggestion.domain.parent.Inspection;
+import com.beginvegan.domain.tmp.suggestion.domain.parent.Inspection;
 import com.beginvegan.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
