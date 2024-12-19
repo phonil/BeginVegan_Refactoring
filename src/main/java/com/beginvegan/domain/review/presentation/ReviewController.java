@@ -1,6 +1,5 @@
 package com.beginvegan.domain.review.presentation;
 
-import com.beginvegan.domain.tmp.report.dto.ReportContentReq;
 import com.beginvegan.domain.review.application.ReviewService;
 import com.beginvegan.domain.review.dto.request.PostReviewReq;
 import com.beginvegan.domain.review.dto.request.UpdateReviewReq;
@@ -113,15 +112,4 @@ public class ReviewController {
     ) throws FirebaseMessagingException {
         return reviewService.recommendReviews(userPrincipal, reviewId);
     }
-
-    @Operation(summary = "리뷰 신고", description = "부적절한 리뷰를 신고합니다.")
-    @PostMapping("/{reviewId}/report")
-    public ResponseEntity<?> deleteReview(
-            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
-            @Parameter(description = "리뷰 id를 입력해주세요..", required = true) @PathVariable Long reviewId,
-            @Parameter(description = "리뷰 신고 사유입니다.", required = true) @Valid @RequestBody ReportContentReq reportContentReq
-    ) throws FirebaseMessagingException {
-        return reviewService.reportReview(userPrincipal, reviewId, reportContentReq);
-    }
-
 }

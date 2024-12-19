@@ -2,16 +2,13 @@ package com.beginvegan.domain.review.application;
 
 import com.beginvegan.domain.alarm.domain.AlarmType;
 import com.beginvegan.domain.common.Status;
-import com.beginvegan.domain.fcm.application.FcmService;
-import com.beginvegan.domain.fcm.domain.MessageType;
-import com.beginvegan.domain.fcm.dto.FcmSendDto;
+import com.beginvegan.infrastructure.fcm.application.FcmService;
+import com.beginvegan.infrastructure.fcm.domain.MessageType;
+import com.beginvegan.infrastructure.fcm.dto.FcmSendDto;
 import com.beginvegan.domain.image.domain.Image;
 import com.beginvegan.domain.image.domain.repository.ImageRepository;
-import com.beginvegan.domain.tmp.recommendation.domain.Recommendation;
-import com.beginvegan.domain.tmp.recommendation.domain.repository.RecommendationRepository;
-import com.beginvegan.domain.tmp.report.domain.Report;
-import com.beginvegan.domain.tmp.report.domain.repository.ReportRepository;
-import com.beginvegan.domain.tmp.report.dto.ReportContentReq;
+import com.beginvegan.domain.recommendation.domain.Recommendation;
+import com.beginvegan.domain.recommendation.domain.repository.RecommendationRepository;
 import com.beginvegan.domain.restaurant.domain.Restaurant;
 import com.beginvegan.domain.restaurant.domain.repository.RestaurantRepository;
 import com.beginvegan.domain.review.domain.Review;
@@ -23,8 +20,7 @@ import com.beginvegan.domain.review.dto.response.MyReviewRes;
 import com.beginvegan.domain.review.dto.response.RecommendationByUserAndReviewRes;
 import com.beginvegan.domain.review.dto.response.RestaurantInfoRes;
 import com.beginvegan.domain.review.dto.response.ReviewDetailRes;
-import com.beginvegan.domain.s3.application.S3Uploader;
-import com.beginvegan.domain.tmp.suggestion.domain.parent.Inspection;
+import com.beginvegan.infrastructure.s3.application.S3Uploader;
 import com.beginvegan.domain.user.application.UserService;
 import com.beginvegan.domain.user.domain.User;
 import com.beginvegan.global.DefaultAssert;
@@ -53,7 +49,6 @@ import java.util.*;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final ReportRepository reportRepository;
     private final RestaurantRepository restaurantRepository;
     private final ImageRepository imageRepository;
     private final RecommendationRepository recommendationRepository;
@@ -127,7 +122,6 @@ public class ReviewService {
             uploadReviewImages(images.get(), review);
             // 리워드 지급 자동화
             user.updatePoint(3);
-            review.updateInspection(Inspection.COMPLETE_REWARD);
             // 사용자레벨 검증
             userService.checkUserLevel(user);
         }
@@ -238,11 +232,9 @@ public class ReviewService {
             uploadReviewImages(images.get(), review);
             // 이미지 여부에 따라 리뷰 타입 변경
             review.updateReviewType(ReviewType.PHOTO);
-            // 검증 필요하므로 초기화
-            review.updateInspection(Inspection.INCOMPLETE);
         } else {
             // 검증된 리뷰 수정 시 사진 삭제하면 포인트 차감
-            if (review.getReviewType() == ReviewType.PHOTO && review.getInspection() == Inspection.COMPLETE_REWARD) {
+            if (review.getReviewType() == ReviewType.PHOTO) {
                 user.subPoint(3);
                 userService.checkUserLevel(user);
             }
@@ -263,10 +255,10 @@ public class ReviewService {
             Review review = validateReviewById(reviewId);
 
             DefaultAssert.isTrue(review.getUser() == user, "리뷰 삭제 권한이 없습니다.");
-            if (review.getInspection() == Inspection.COMPLETE_REWARD) {
-                user.subPoint(3);
-                userService.checkUserLevel(user);
-            }
+//            if (review.getInspection() == Inspection.COMPLETE_REWARD) {
+//                user.subPoint(3);
+//                userService.checkUserLevel(user);
+//            }
             // 이미지 삭제
             deleteReviewImages(review);
             reviewRepository.delete(review);
@@ -289,33 +281,6 @@ public class ReviewService {
             imageRepository.deleteAll(originalImages);
         }
     }
-
-    // 리뷰 신고
-    @Transactional
-    public ResponseEntity<?> reportReview(UserPrincipal userPrincipal, Long reviewId, ReportContentReq reportContentReq) throws FirebaseMessagingException {
-        User user = userService.validateUserById(userPrincipal.getId());
-        Review review = validateReviewById(reviewId);
-
-        // 추후 필요 시 enum 값으로 수정
-        Report report = Report.builder()
-                .user(user)
-                .review(review)
-                .content(reportContentReq.getContent())
-                .build();
-        reportRepository.save(report);
-
-        // 푸시알림 생성
-        String msg = "리뷰 신고가 정상적으로 접수되었어요. 운영자의 검토 후 조치를 취할 예정이에요.";
-        FcmSendDto fcmSendDto = fcmService.makeFcmSendDto(user.getFcmToken(), AlarmType.MAP, reviewId, msg, MessageType.REVIEW_REPORT, null);
-        fcmService.sendMessageTo(fcmSendDto);
-
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information(Message.builder().message("신고가 접수되었습니다.").build())
-                .build();
-        return ResponseEntity.ok(apiResponse);
-    }
-
 
     public ResponseEntity<?> findReviewsByUser(UserPrincipal userPrincipal, Integer page) {
         User user = userService.validateUserById(userPrincipal.getId());

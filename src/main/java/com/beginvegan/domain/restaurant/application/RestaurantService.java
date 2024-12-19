@@ -6,7 +6,7 @@ import com.beginvegan.domain.bookmark.domain.repository.ContentType;
 import com.beginvegan.domain.common.Status;
 import com.beginvegan.domain.image.domain.Image;
 import com.beginvegan.domain.image.domain.repository.ImageRepository;
-import com.beginvegan.domain.tmp.recommendation.domain.repository.RecommendationRepository;
+import com.beginvegan.domain.recommendation.domain.repository.RecommendationRepository;
 import com.beginvegan.domain.restaurant.domain.Menu;
 import com.beginvegan.domain.restaurant.domain.Restaurant;
 import com.beginvegan.domain.restaurant.domain.repository.RestaurantRepository;

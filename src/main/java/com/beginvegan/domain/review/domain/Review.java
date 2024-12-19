@@ -1,10 +1,8 @@
 package com.beginvegan.domain.review.domain;
 
 import com.beginvegan.domain.common.BaseEntity;
-import com.beginvegan.domain.tmp.recommendation.domain.Recommendation;
-import com.beginvegan.domain.tmp.report.domain.Report;
 import com.beginvegan.domain.restaurant.domain.Restaurant;
-import com.beginvegan.domain.tmp.suggestion.domain.parent.Inspection;
+import com.beginvegan.domain.recommendation.domain.Recommendation;
 import com.beginvegan.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -39,14 +37,8 @@ public class Review extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ReviewType reviewType;
 
-    @Enumerated(EnumType.STRING)
-    private Inspection inspection; // 검수 여부
-
     @OneToMany(mappedBy = "review", cascade = CascadeType.REMOVE)
     private List<Recommendation> recommendations;
-
-    @OneToMany(mappedBy = "review", cascade = CascadeType.REMOVE)
-    private List<Report> reports;
 
     @Builder
     public Review(Long id, String content, Restaurant restaurant, User user, Double rate, ReviewType reviewType) {
@@ -57,7 +49,6 @@ public class Review extends BaseEntity {
         this.rate = rate;
         this.visible = true;
         this.reviewType = reviewType;
-        this.inspection = Inspection.INCOMPLETE;
     }
 
     public void updateReview(String content, Double rate) {
@@ -66,7 +57,6 @@ public class Review extends BaseEntity {
     }
 
     public void updateReviewType(ReviewType reviewType) { this.reviewType = reviewType; }
-    public void updateInspection(Inspection inspection) { this.inspection = inspection; }
 
     public void updateVisible(boolean visible) { this.visible = visible; }
 }
